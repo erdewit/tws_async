@@ -163,8 +163,8 @@ class TWS(EWrapper, TWSClient):
             c.exchange = 'SMART'
             reqId = self.getReqId()
             self._reqId2Contract[reqId] = c
-            self.reqMktData(reqId, c, genericTickList='',
-                    snapshot=False, mktDataOptions=[])
+            self.reqMktData(reqId, c, genericTickList='', snapshot=False,
+                    regulatorySnapshot=False, mktDataOptions=[])
 
     @isIBAPI
     def connectAck(self):

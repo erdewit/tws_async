@@ -41,4 +41,4 @@ Note that on some systems the `pip` command for Python 3 is called `pip3`. Jupyt
 ```
 jupyter notebook
 ```
-![notebook](notebook.png)
+

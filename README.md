@@ -10,3 +10,13 @@ Windows users are encouraged to use the tws_async_windows.py script that bypasse
 pip install PyQt5
 pip install quamash
 ```
+
+## Jupyter Notebook
+
+Optional, but useful, dependencies for plotting and data handling:
+```
+pip install numpy
+pip install pandas
+pip install seaborn
+pip install quamash
+```

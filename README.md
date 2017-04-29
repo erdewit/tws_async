@@ -3,7 +3,7 @@ Integrate the Python IB API from Interactive Brokers with an event loop.
 This allows the API to be used asynchonously within a single-threaded
 application.
 
-[Python](www.python.org) version >= 3.5 is required as well as the
+[Python](http://www.python.org) version >= 3.5 is required as well as the
 [Interactive Brokers API](http://interactivebrokers.github.io).
 
 ## asyncio event loop

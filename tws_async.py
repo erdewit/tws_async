@@ -219,7 +219,7 @@ class TWS(EWrapper, TWSClient):
 
 if __name__ == '__main__':
     tws = TWS()
-    tws.connect(host='localhost', port=7496, clientId=1)
+    tws.connect(host='127.0.0.1', port=7496, clientId=1)
     loop = asyncio.get_event_loop()
     loop.run_forever()
 

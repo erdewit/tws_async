@@ -103,7 +103,7 @@ class TWSConnection:
         self.socket = None
 
     def isConnected(self):
-        return self.socket is None
+        return self.socket is not None
 
     def sendMsg(self, msg):
         self.socket.write(msg)

@@ -1,11 +1,18 @@
+import sys
+import asyncio
 import struct
+import signal
+
 import ibapi
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper, iswrapper
+
 import PyQt5.Qt as qt
 import PyQt5.QtNetwork as qtnetwork
 
-qApp = qt.QApplication([])
+
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+qApp = qt.QApplication(sys.argv)
 
 
 class TWSClient(EWrapper, EClient):
@@ -13,14 +20,14 @@ class TWSClient(EWrapper, EClient):
     Version of ibapi.client.EClient that integrates with the Qt event loop.
     """
     def __init__(self):
-        EClient.__init__(self, self)
+        EClient.__init__(self, wrapper=self)
 
     def reset(self):
         EClient.reset(self)
         self._data = b''
 
     def run(self):
-        pass  # nothing needed, everything happens in _onSocketReadyRead
+        qApp.exec_()
 
     def connect(self, host, port, clientId):
         self.host = host
@@ -85,7 +92,7 @@ class TWSClient(EWrapper, EClient):
 
 class TWSConnection:
     """
-    This is a replacement for ibapi.connection.Connection that uses a QSocket.
+    Replacement for ibapi.connection.Connection that uses a QTcpSocket.
     """
     def __init__(self, host, port):
         self.host = host
@@ -94,6 +101,7 @@ class TWSConnection:
 
     def connect(self):
         self.socket = qtnetwork.QTcpSocket()
+        # set TCP_NODELAY (disable Nagle's algorithm)
         self.socket.setSocketOption(
                 qtnetwork.QAbstractSocket.LowDelayOption, True)
         self.socket.connectToHost(self.host, self.port)
@@ -103,9 +111,32 @@ class TWSConnection:
         self.socket = None
 
     def isConnected(self):
-        return self.socket is None
+        return self.socket is not None
 
     def sendMsg(self, msg):
         self.socket.write(msg)
         self.socket.flush()
 
+
+class TWS(TWSClient):
+    """
+    Example to connect to a running Trader Work Station (TWS)
+    from Interactive Brokers.
+    """
+    def __init__(self):
+        TWSClient.__init__(self)
+
+    @iswrapper
+    def connectAck(self):
+        self.reqAccountUpdates(1, '')
+
+    @iswrapper
+    def updateAccountValue(self, key: str, val: str, currency: str,
+            accountName: str):
+        print('Account update: {} = {} {}'.format(key, val, currency))
+
+
+if __name__ == '__main__':
+    tws = TWS()
+    tws.connect(host='127.0.0.1', port=7497, clientId=1)
+    tws.run()

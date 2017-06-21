@@ -31,15 +31,15 @@ the standard EClient as provided by IBAPI:
 * ``TWSClient``, for use with the asyncio event loop;
 * ``TWSClientQt``, for use with the PyQt5 event loop.
 
-These clients also inherit from ibapi.wrapper.EWrapper and can be used exactly
+These clients also inherit from ``ibapi.wrapper.EWrapper`` and can be used exactly
 as one would use the standard IBAPI version. The asynchronous clients use
 their own event-driven networking code that replaces the networking code
 of the standard EClient, and they also replace the infinite loop of
 ``EClient.run()`` with an event loop.
 
 To simplify working with contracts, this package provides
-Contract, Stock, Option, Future, Forex, Index, CFD and Commodity
-classes that can be used anywhere where a ibapi.contract.Contract is expected.
+``Contract``, ``Stock``, ``Option``, ``Future``, ``Forex``, ``Index``, ``CFD`` and ``Commodity``
+classes that can be used anywhere where a ``ibapi.contract.Contract`` is expected.
 Examples of some simple cases are
 ``Stock('AMD')``, ``Forex('EURUSD')``, ``CFD('IBUS30')`` or
 ``Future('ES', '201612', 'GLOBEX')``.

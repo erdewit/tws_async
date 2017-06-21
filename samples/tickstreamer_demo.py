@@ -86,5 +86,5 @@ class TickStreamer(TWSClient):
 
 
 tws = TickStreamer()
-tws.connect(host='maxi', port=7497, clientId=1)
+tws.connect(host='127.0.0.1', port=7497, clientId=1)
 tws.run()

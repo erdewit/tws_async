@@ -1,9 +1,9 @@
 Introduction
 ============
 
-This project allows the Python API from Interactive Brokers (IBAPI)
-to be used asynchronously with the asyncio_ standard library or with
-PyQt5_.
+``tws_async`` allows the Python API from Interactive Brokers (IBAPI)
+to be used asynchronously and single-threaded with the
+asyncio_ standard library or with the PyQt5_ framework.
 
 This offers a simpler, safer and more performant approach to concurrency than
 multithreading.
@@ -12,12 +12,12 @@ multithreading.
 Installation
 ============
 
-.. ::  pip3 -U tws_async
+    pip3 -U tws_async
 
 Note that on some systems the ``pip3`` command is just ``pip``.
 
 Python_ version 3.5 or higher is required as well as the
-`Interactive Brokers Python API`_
+`Interactive Brokers Python API`_.
 
 
 Usage
@@ -49,21 +49,18 @@ these sample use cases:
 Historical data downloader
 --------------------------
 The HistRequester_ downloads historical data and saves it to CSV files;
-`histrequester demo <samples/histrequester_demo.py>` illustrates how to use it.
+`histrequester demo`_ illustrates how to use it.
 
 Realtime streaming ticks
 ------------------------
-The `tick streamer`_ <samples/tickstreamer_demo.py` subscribes
-to realtime tick data.
+The `tick streamer`_ subscribes to realtime tick data.
 
 Jupyter Notebook
 ----------------
 To use the Interactive Brokers API fully interactively in a Jupyter notebook,
-have a look at the `example notebook <samples/tws.ipynb>`.
+have a look at the `example notebook`_.
 
-Jupyter can be started with the command::
-
-.. :: jupyter notebook
+Jupyter can be started with the command ``jupyter notebook``.
 
 This notebook uses the Qt version of the client, where the
 Qt event loop is started with the ``%gui qt5`` directive at the very top.
@@ -79,6 +76,7 @@ the asyncio event loop. It can be done by placing this code at
 the top of the notebook:
 
 .. code:: python
+
     %gui qt5
     import asyncio
     import quamash
@@ -91,6 +89,7 @@ One thing that does not work in the combination of quamash and Jupyter is the
 loop.run_until_finished method. It can be patched like this:
 
 .. code:: python
+
     def run_until_complete(self, future):
         future = asyncio.ensure_future(future)
         qApp = qt.QApplication.instance()
@@ -112,6 +111,6 @@ loop.run_until_finished method. It can be patched like this:
 .. _`HistRequester`: async_tws/histrequester.py
 .. _`histrequester demo`: samples/histrequester_demo.py
 .. _`tick streamer`: samples/tickstreamer_demo.py
-
+.. _`example notebook`: samples/tws.ipynb
 
 

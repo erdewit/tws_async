@@ -50,7 +50,7 @@ these sample use cases:
 
 Historical data downloader
 --------------------------
-The ``HistRequester_`` downloads historical data and saves it to CSV files;
+The HistRequester_ downloads historical data and saves it to CSV files;
 `histrequester demo`_ illustrates how to use it.
 
 Realtime streaming ticks
@@ -88,7 +88,7 @@ the top of the notebook:
 With this it is possible to run the asyncio version of the client as well.
 
 One thing that does not work in the combination of quamash and Jupyter is the
-``loop.run_until_finished method``. It can be patched like this:
+``loop.run_until_finished`` method. It can be patched like this:
 
 .. code:: python
 

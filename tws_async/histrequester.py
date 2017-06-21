@@ -49,7 +49,6 @@ class HistRequest:
 class HistRequester(TWSClient):
     """
     Download historical data and save to CSV files.
-    
     """
     def __init__(self):
         TWSClient.__init__(self)
@@ -70,7 +69,7 @@ class HistRequester(TWSClient):
     async def histReqAsync(self, req: HistRequest) -> list:
         """
         Download historical data for the given request and return
-        the data as a list of [dateStr, open, high, low, close, volume] lists.
+        the data as a list of [datetime, open, high, low, close, volume] lists.
         """
         await self.ready.wait()
         reqId = self.getReqId()

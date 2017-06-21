@@ -10,12 +10,13 @@ from ibapi.wrapper import EWrapper, iswrapper
 import PyQt5.Qt as qt
 import PyQt5.QtNetwork as qtnetwork
 
-
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 qApp = qt.QApplication(sys.argv)
 
+__all__ = ['TWSClientQt', 'iswrapper']
 
-class TWSClient(EWrapper, EClient):
+
+class TWSClientQt(EWrapper, EClient):
     """
     Version of ibapi.client.EClient that integrates with the Qt event loop.
     """
@@ -118,16 +119,15 @@ class TWSConnection:
         self.socket.flush()
 
 
-class TWS(TWSClient):
+class TWS_TestQt(TWSClientQt):
     """
-    Example to connect to a running Trader Work Station (TWS)
-    from Interactive Brokers.
+    Test to connect to a running TWS or gateway server.
     """
     def __init__(self):
-        TWSClient.__init__(self)
+        TWSClientQt.__init__(self)
 
     @iswrapper
-    def connectAck(self):
+    def nextValidId(self, reqId: int):
         self.reqAccountUpdates(1, '')
 
     @iswrapper
@@ -137,6 +137,6 @@ class TWS(TWSClient):
 
 
 if __name__ == '__main__':
-    tws = TWS()
+    tws = TWS_TestQt()
     tws.connect(host='127.0.0.1', port=7497, clientId=1)
     tws.run()

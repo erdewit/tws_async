@@ -2,10 +2,10 @@ import datetime
 import pytz
 from tws_async import *
 
-
-# timezone = datetime.timezone.utc
+# pick the desired timezone to use for intraday data in the CSV output
+timezone = datetime.timezone.utc
 # timezone = pytz.timezone('Europe/Amsterdam')
-timezone = pytz.timezone('US/Eastern')
+# timezone = pytz.timezone('US/Eastern')
 
 stocks = [
     Stock('TSLA'),

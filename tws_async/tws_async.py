@@ -5,6 +5,12 @@ import ibapi
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper, iswrapper
 
+__all__ = ['TWSClient', 'TWSException', 'iswrapper']
+
+
+class TWSException(Exception):
+    pass
+
 
 class TWSClient(EWrapper, EClient):
     """
@@ -17,9 +23,16 @@ class TWSClient(EWrapper, EClient):
         EClient.reset(self)
         self._data = b''
 
-    def run(self):
+    def run(self, coro=None):
+        """
+        Per default run the asyncio event loop forever.
+        If a coroutine is given then run it until completion.
+        """
         loop = asyncio.get_event_loop()
-        loop.run_forever()
+        if coro is None:
+            loop.run_forever()
+        else:
+            loop.run_until_complete(coro)
 
     def connect(self, host, port, clientId):
         self.host = host
@@ -86,12 +99,16 @@ class TWSConnection:
         self.hasData = None
         self.connected = None
 
+    def _onConnectionCreated(self, future):
+        _, self.socket = future.result()
+        self.connected()
+
     def connect(self):
         loop = asyncio.get_event_loop()
         coro = loop.create_connection(lambda: TWSSocket(self),
                 self.host, self.port)
-        _, self.socket = loop.run_until_complete(coro)
-        self.connected()
+        future = asyncio.ensure_future(coro)
+        future.add_done_callback(self._onConnectionCreated)
 
     def disconnect(self):
         self.socket.transport.close()
@@ -120,91 +137,26 @@ class TWSSocket(asyncio.Protocol):
         self.twsConnection.hasData(data)
 
 
-class TWS(TWSClient):
+
+class TWS_Test(TWSClient):
     """
-    Example to connect to a running Trader Work Station (TWS)
-    from Interactive Brokers.
+    Test to connect to a running TWS or gateway server.
     """
     def __init__(self):
         TWSClient.__init__(self)
-        self.accountName = ''
-        self._reqIdSeq = 0
-        self._reqId2Contract = {}
-
-    def getReqId(self):
-        """
-        Get new request ID (integer).
-        """
-        assert self._reqIdSeq
-        newId = self._reqIdSeq
-        self._reqIdSeq += 1
-        return newId
-
-    def subscribe(self):
-        for symbol in ('GOOG', 'TSLA', 'AAPL'):
-            c = ibapi.contract.Contract()
-            c.symbol = symbol
-            c.secType = 'STK'
-            c.currency = 'USD'
-            c.exchange = 'SMART'
-            reqId = self.getReqId()
-            self._reqId2Contract[reqId] = c
-            self.reqMktData(reqId, c, genericTickList='', snapshot=False,
-                    regulatorySnapshot=False, mktDataOptions=[])
-
-    @iswrapper
-    def connectAck(self):
-        self.reqAccountUpdates(1, '')
-        self.reqOpenOrders()
-        self.reqPositions()
 
     @iswrapper
     def nextValidId(self, reqId: int):
-        self._reqIdSeq = reqId
-        self.subscribe()
-
-    @iswrapper
-    def tickPrice(self, reqId: int,
-            tickType: ibapi.ticktype.TickType,
-            price: float,
-            attrib: ibapi.common.TickAttrib):
-        contract = self._reqId2Contract[reqId]
-        print('{} price {}'.format(contract.symbol, price))
-
-    @iswrapper
-    def tickSize(self, reqId: int,
-            tickType: ibapi.ticktype.TickType,
-            size: int):
-        contract = self._reqId2Contract[reqId]
-        print('{} size {}'.format(contract.symbol, size))
-
-    @iswrapper
-    def updateAccountTime(self, timeStamp: str):
-        print('Time {}'.format(timeStamp))
-
-    @iswrapper
-    def accountDownloadEnd(self, accountName: str):
-        self.accountName = accountName
+        self.reqAccountUpdates(1, '')
 
     @iswrapper
     def updateAccountValue(self, key: str, val: str, currency: str,
             accountName: str):
         print('Account update: {} = {} {}'.format(key, val, currency))
 
-    @iswrapper
-    def position(self, account: str,
-            contract: ibapi.contract.Contract,
-            position: float,
-            avgCost: float):
-        print('Position: {} {} @ {}'.format(position, contract.symbol, avgCost))
-
-    @iswrapper
-    def positionEnd(self):
-        pass
-
 
 if __name__ == '__main__':
-    tws = TWS()
+    tws = TWS_Test()
     tws.connect(host='127.0.0.1', port=7497, clientId=1)
     tws.run()
 

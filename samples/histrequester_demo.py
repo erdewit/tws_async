@@ -2,10 +2,6 @@ import datetime
 import pytz
 from tws_async import *
 
-# pick the desired timezone to use for intraday data in the CSV output
-timezone = datetime.timezone.utc
-# timezone = pytz.timezone('Europe/Amsterdam')
-# timezone = pytz.timezone('US/Eastern')
 
 stocks = [
     Stock('TSLA'),
@@ -24,9 +20,13 @@ startDate = endDate - datetime.timedelta(days=7)
 
 histReqs = []
 for date in dateRange(startDate, endDate):
-    histReqs += [HistRequest(stock, endDateTime=date) for stock in stocks]
-    histReqs += [HistRequest(forex, endDateTime=date, whatToShow='MIDPOINT')
-            for forex in forexs]
+    histReqs += [HistRequest(stock, date) for stock in stocks]
+    histReqs += [HistRequest(forex, date, whatToShow='MIDPOINT',
+            durationStr='30 D', barSizeSetting='1 day') for forex in forexs]
+
+timezone = datetime.timezone.utc
+# timezone = pytz.timezone('Europe/Amsterdam')
+# timezone = pytz.timezone('US/Eastern')
 
 tws = HistRequester()
 tws.connect('127.0.0.1', 7497, clientId=1)

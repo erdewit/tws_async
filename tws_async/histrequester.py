@@ -93,7 +93,13 @@ class HistRequester(TWSClient):
             rootDir: str='data', timezone=UTC):
         """
         Download historical data for the list of historical requests and
-        write each result to its own CSV file below the given rootDir directory.
+        write each result to its own CSV file below the given
+        rootDir directory (default 'data' in the current directory).
+
+        The timezone parameter (default UTC) specifies what timezone to use
+        for the timestamps of the bars in the CSV output.
+        When the timezone is UTC no additional timezone information is written
+        in the output.
         
         To avoid pacing violations, one request at a time is submitted
         to the server.
@@ -161,7 +167,11 @@ class HistRequester(TWSClient):
             WAP: float, hasGaps: int):
         histReq = self._histReqs[reqId]
         if histReq.formatDate == 1:
-            dt = datetime.date.strptime(date, 'YYYYmmdd')
+            # YYYYmmdd
+            y = int(date[0:4])
+            m = int(date[4:6])
+            d = int(date[6:8])
+            dt = datetime.date(y, m, d)
         else:
             dt = datetime.datetime.utcfromtimestamp(int(date))
         histReq.data.append([dt, open, high, low, close,

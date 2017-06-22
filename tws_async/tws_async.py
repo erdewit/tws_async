@@ -34,7 +34,7 @@ class TWSClient(EWrapper, EClient):
         else:
             loop.run_until_complete(coro)
 
-    def connect(self, host, port, clientId):
+    def connect(self, host, port, clientId, asyncConnect=False):
         self.host = host
         self.port = port
         self.clientId = clientId
@@ -42,7 +42,7 @@ class TWSClient(EWrapper, EClient):
         self.conn = TWSConnection(host, port)
         self.conn.connected = self._onSocketConnected
         self.conn.hasData = self._onSocketHasData
-        self.conn.connect()
+        self.conn.connect(asyncConnect)
 
     def _prefix(self, msg):
         # prefix a message with its length
@@ -103,12 +103,16 @@ class TWSConnection:
         _, self.socket = future.result()
         self.connected()
 
-    def connect(self):
+    def connect(self, asyncConnect=False):
         loop = asyncio.get_event_loop()
         coro = loop.create_connection(lambda: TWSSocket(self),
                 self.host, self.port)
         future = asyncio.ensure_future(coro)
-        future.add_done_callback(self._onConnectionCreated)
+        if asyncConnect:
+            future.add_done_callback(self._onConnectionCreated)
+        else:
+            loop.run_until_complete(future)
+            self._onConnectionCreated(future)
 
     def disconnect(self):
         self.socket.transport.close()

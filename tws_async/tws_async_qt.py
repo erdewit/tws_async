@@ -30,7 +30,7 @@ class TWSClientQt(EWrapper, EClient):
     def run(self):
         qApp.exec_()
 
-    def connect(self, host, port, clientId):
+    def connect(self, host, port, clientId, asyncConnect=False):
         self.host = host
         self.port = port
         self.clientId = clientId
@@ -41,6 +41,8 @@ class TWSClientQt(EWrapper, EClient):
         self.conn.socket.readyRead.connect(self._onSocketReadyRead)
         self.conn.socket.error.connect(self._onSocketError)
         self.setConnState(EClient.CONNECTING)
+        if not asyncConnect:
+            self.conn.socket.waitForConnected(5000)
 
     def _prefix(self, msg):
         # prefix a message with its length

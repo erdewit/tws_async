@@ -34,7 +34,7 @@ the standard EClient as provided by IBAPI:
 These clients also inherit from ``ibapi.wrapper.EWrapper`` and can be used exactly
 as one would use the standard IBAPI version. The asynchronous clients use
 their own event-driven networking code that replaces the networking code
-of the standard EClient, and they also replace the infinite loop of
+of the standard ``EClient``, and they also replace the infinite loop of
 ``EClient.run()`` with an event loop.
 
 To simplify working with contracts, this package provides
@@ -74,7 +74,7 @@ Currently there does not seem to be a single-threaded way to directly run
 the asyncio event loop in Jupyter. What can be done is to use the
 Qt event loop (which does have good integration with the Jupyter kernel)
 with the quamash_ adaptor. With quamash the Qt event loop is used to drive
-the asyncio event loop. It can be done by placing this code at
+the asyncio event loop. This can be done by placing the following code at
 the top of the notebook:
 
 .. code:: python
@@ -84,8 +84,6 @@ the top of the notebook:
     import quamash
     loop = quamash.QEventLoop()
     asyncio.set_event_loop(loop)
-
-With this it is possible to run the asyncio version of the client as well.
 
 One thing that does not work in the combination of quamash and Jupyter is the
 ``loop.run_until_finished`` method. It can be patched like this:
@@ -103,6 +101,25 @@ One thing that does not work in the combination of quamash and Jupyter is the
     
     quamash.QEventLoop.run_until_complete = run_until_complete
 
+The asyncio version of the client relies on ``loop.run_until_finished`` to connect
+synchonously. So in order to run the asyncio client in the notebook, apply the patch
+or just connect asynchonously (i.e. give asyncConnect=True to the connect call).
+
+Changelog
+=========
+
+Version 0.5.3
+-------------
+* Added optional ``asyncConnect`` argument to ``client.connect()`` method. The default is now to connect synchronously (block until connected).
+* Fixed bug in HistRequester when downloading daily data.
+
+Version 0.5.0
+-------------
+* Initial pip package release.
+
+Good luck and enjoy,
+
+:author: Ewald de Wit  <ewald.de.wit@gmail.com>
 
 .. _asyncio: https://docs.python.org/3.6/library/asyncio.html
 .. _PyQt5: https://pypi.python.org/pypi/PyQt5

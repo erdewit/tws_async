@@ -13,7 +13,7 @@ with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='tws_async',
-    version='0.5.1',
+    version='0.5.2',
     description=('Use the Interactive Brokers API (IBAPI) asynchonously'
             'with asyncio or PyQt5'),
     long_description=long_description,

@@ -14,7 +14,7 @@ Installation
 
 Install using pip::
 
-    pip3 -U tws_async
+    pip3 install -U tws_async
 
 Note that on some systems the ``pip3`` command is just ``pip``.
 

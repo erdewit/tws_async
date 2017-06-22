@@ -110,9 +110,9 @@ One thing that does not work in the combination of quamash and Jupyter is the
 .. _`Interactive Brokers Python API`: http://interactivebrokers.github.io
 .. _`official IBAPI documentation`: https://interactivebrokers.github.io/tws-api/#gsc.tab=0
 .. _quamash: https://github.com/harvimt/quamash
-.. _`HistRequester`: tws_async/histrequester.py
-.. _`histrequester demo`: samples/histrequester_demo.py
-.. _`tick streamer`: samples/tickstreamer_demo.py
-.. _`example notebook`: samples/tws.ipynb
+.. _`HistRequester`: https://github.com/erdewit/tws_async/blob/master/tws_async/histrequester.py
+.. _`histrequester demo`: https://github.com/erdewit/tws_async/blob/master/samples/histrequester_demo.py
+.. _`tick streamer`: https://github.com/erdewit/tws_async/blob/master/samples/tickstreamer_demo.py
+.. _`example notebook`: https://github.com/erdewit/tws_async/blob/master/samples/tws.ipynb
 
 

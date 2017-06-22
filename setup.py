@@ -13,7 +13,7 @@ with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='tws_async',
-    version='0.5.0',
+    version='0.5.1',
     description=('Use the Interactive Brokers API (IBAPI) asynchonously'
             'with asyncio or PyQt5'),
     long_description=long_description,
@@ -37,6 +37,7 @@ setup(
     data_files=[
         ('samples', ['samples/histrequester_demo.py']),
         ('samples', ['samples/tickstreamer_demo.py']),
+        ('samples', ['samples/tws.ipynb']),
         ],
     zip_safe=False,
 )

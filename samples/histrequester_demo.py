@@ -30,6 +30,6 @@ timezone = datetime.timezone.utc
 
 util.logToConsole()
 tws = HistRequester()
-tws.connect('127.0.0.1', 7497, clientId=2)
+tws.connect('127.0.0.1', 7497, clientId=1)
 task = tws.download(histReqs, rootDir='data', timezone=timezone)
 tws.run(task)

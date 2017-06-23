@@ -12,15 +12,6 @@ class TickStreamer(TWSClient):
         self._reqIdSeq = 0
         self._reqId2Contract = {}
 
-    def getReqId(self) -> int:
-        """
-        Get new request ID.
-        """
-        assert self._reqIdSeq
-        newId = self._reqIdSeq
-        self._reqIdSeq += 1
-        return newId
-
     def subscribe(self):
         contracts = [
             Stock('GOOG'),
@@ -39,11 +30,6 @@ class TickStreamer(TWSClient):
         self.reqAccountUpdates(1, '')
         self.reqOpenOrders()
         self.reqPositions()
-
-    @iswrapper
-    def nextValidId(self, reqId: int):
-        self._reqIdSeq = reqId
-        self.subscribe()
 
     @iswrapper
     def tickPrice(self, reqId: int,
@@ -87,4 +73,5 @@ class TickStreamer(TWSClient):
 
 tws = TickStreamer()
 tws.connect(host='127.0.0.1', port=7497, clientId=1)
+tws.subscribe()
 tws.run()

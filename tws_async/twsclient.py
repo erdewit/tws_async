@@ -6,7 +6,7 @@ import ibapi
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper, iswrapper
 
-from . import util
+import tws_async.util as util
 
 __all__ = ['TWSClient', 'TWSException', 'iswrapper']
 

@@ -9,7 +9,7 @@ from ibapi.wrapper import EWrapper, iswrapper
 import PyQt5.Qt as qt
 import PyQt5.QtNetwork as qtnetwork
 
-from . import util
+import tws_async.util as util
 
 util.allowCtrlC()
 

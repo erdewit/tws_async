@@ -108,6 +108,10 @@ or just connect asynchonously (i.e. give asyncConnect=True to the connect call).
 Changelog
 =========
 
+Version 0.5.5
+-------------
+* small simplifications
+
 Version 0.5.4
 -------------
 * connect() call of the clients will now by default block until client is ready to serve requests.

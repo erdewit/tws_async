@@ -6,3 +6,5 @@ from . import util
 
 __all__ = (['util'] + contracts.__all__ + twsclient.__all__ +
         twsclient.__all__ + histrequester.__all__)
+
+print(dir)

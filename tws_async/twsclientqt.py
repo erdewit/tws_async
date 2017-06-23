@@ -1,7 +1,6 @@
 import sys
-import asyncio
 import struct
-import signal
+import logging
 
 import ibapi
 from ibapi.client import EClient
@@ -10,8 +9,9 @@ from ibapi.wrapper import EWrapper, iswrapper
 import PyQt5.Qt as qt
 import PyQt5.QtNetwork as qtnetwork
 
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-qApp = qt.QApplication(sys.argv)
+from . import util
+
+util.allowCtrlC()
 
 __all__ = ['TWSClientQt', 'iswrapper']
 
@@ -22,15 +22,21 @@ class TWSClientQt(EWrapper, EClient):
     """
     def __init__(self):
         EClient.__init__(self, wrapper=self)
+        self.qApp = qt.QApplication.instance() or qt.QApplication(sys.argv)
+        self.readyTrigger = Trigger()
+        self._logger = logging.getLogger(__class__.__name__)
 
     def reset(self):
         EClient.reset(self)
         self._data = b''
+        self._reqIdSeq = 0
 
     def run(self):
-        qApp.exec_()
+        self.qApp.exec_()
 
     def connect(self, host, port, clientId, asyncConnect=False):
+        self._logger.info('Connecting to {}:{} with clientId {}...'.
+                format(host, port, clientId))
         self.host = host
         self.port = port
         self.clientId = clientId
@@ -42,7 +48,22 @@ class TWSClientQt(EWrapper, EClient):
         self.conn.socket.error.connect(self._onSocketError)
         self.setConnState(EClient.CONNECTING)
         if not asyncConnect:
-            self.conn.socket.waitForConnected(5000)
+            self.readyTrigger.wait()
+
+    def getReqId(self) -> int:
+        """
+        Get new request ID.
+        """
+        assert self._reqIdSeq
+        newId = self._reqIdSeq
+        self._reqIdSeq += 1
+        return newId
+
+    def dataHandlingPre(self):
+        pass
+
+    def dataHandlingPost(self):
+        pass
 
     def _prefix(self, msg):
         # prefix a message with its length
@@ -62,9 +83,10 @@ class TWSClientQt(EWrapper, EClient):
 
     def _onSocketError(self, socketError):
         if self.conn.socket:
-            print(self.conn.socket.errorString())
+            self._logger.error(self.conn.socket.errorString())
 
     def _onSocketReadyRead(self):
+        self.dataHandlingPre()
         self._data += bytes(self.conn.socket.readAll())
 
         while True:
@@ -88,9 +110,20 @@ class TWSClientQt(EWrapper, EClient):
                 self.setConnState(EClient.CONNECTED)
                 self.startApi()
                 self.wrapper.connectAck()
+                self._logger.info('Logged on to server version {}'.
+                        format(self.serverVersion_))
             else:
+                # snoop for next valid id response,
+                # it signals readiness of the client
+                if fields[0] == b'9':
+                    _, _, validId = fields
+                    self._reqIdSeq = int(validId)
+                    self.readyTrigger.go()
+
                 # decode and handle the message
                 self.decoder.interpret(fields)
+
+        self.dataHandlingPost()
 
 
 class TWSConnection:
@@ -121,6 +154,23 @@ class TWSConnection:
         self.socket.flush()
 
 
+class Trigger(qt.QObject):
+    """
+    Wait synchronously on a trigger.
+    """
+    trigger = qt.pyqtSignal()
+
+    def __init__(self):
+        qt.QObject.__init__(self)
+
+    def go(self):
+        self.trigger.emit()
+
+    def wait(self, timeout=5000):
+        spy = qt.QSignalSpy(self.trigger)
+        spy.wait(timeout)
+
+
 class TWS_TestQt(TWSClientQt):
     """
     Test to connect to a running TWS or gateway server.
@@ -129,16 +179,14 @@ class TWS_TestQt(TWSClientQt):
         TWSClientQt.__init__(self)
 
     @iswrapper
-    def nextValidId(self, reqId: int):
-        self.reqAccountUpdates(1, '')
-
-    @iswrapper
     def updateAccountValue(self, key: str, val: str, currency: str,
             accountName: str):
         print('Account update: {} = {} {}'.format(key, val, currency))
 
 
 if __name__ == '__main__':
+    util.logToConsole()
     tws = TWS_TestQt()
     tws.connect(host='127.0.0.1', port=7497, clientId=1)
+    tws.reqAccountUpdates(1, '')
     tws.run()

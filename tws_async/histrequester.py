@@ -1,31 +1,15 @@
 import os
 import datetime
 import asyncio
+import logging
 import csv
 
 import ibapi
-from tws_async import TWSClient, iswrapper, TWSException
+from .twsclient import TWSClient, iswrapper, TWSException
 
 UTC = datetime.timezone.utc
 
-
-__all__ = ['HistRequester', 'HistRequest', 'dateRange']
-
-
-def dateRange(startDate, endDate, skipWeekend=True):
-    """
-    Iterate the days from given start date up to and including end date.
-    """
-    day = datetime.timedelta(days=1)
-    date = startDate
-    while True:
-        if skipWeekend:
-            while date.weekday() >= 5:
-                date += day
-        if date > endDate:
-            break
-        yield date
-        date += day
+__all__ = ['HistRequester', 'HistRequest']
 
 
 class HistRequest:
@@ -52,26 +36,17 @@ class HistRequester(TWSClient):
     """
     def __init__(self):
         TWSClient.__init__(self)
-        self.ready = asyncio.Event()
         self._reqIdSeq = 0
         self._histReqs = {}
         self._futs = {}
-
-    def getReqId(self) -> int:
-        """
-        Get new request ID.
-        """
-        assert self._reqIdSeq
-        newId = self._reqIdSeq
-        self._reqIdSeq += 1
-        return newId
+        self._logger = logging.getLogger(__class__.__name__)
 
     async def histReqAsync(self, req: HistRequest) -> list:
         """
         Download historical data for the given request and return
         the data as a list of [datetime, open, high, low, close, volume] lists.
         """
-        await self.ready.wait()
+        await self.readyEvent.wait()
         reqId = self.getReqId()
         if not req.endDateTime:
             end = ''
@@ -124,9 +99,11 @@ class HistRequester(TWSClient):
                             dt = row[0]
                             row[0] = dt.replace(tzinfo=UTC).astimezone(timezone)
                         csvfile.writerow(row)
-                print('Downloaded {}, {} bars'.format(filename, len(data)))
+                self._logger.info('Downloaded {}, {} bars'.
+                        format(filename, len(data)))
             except TWSException as e:
-                print('Error downloading {}: {}'.format(filename, e))
+                self._logger.info('Error downloading {}: {}'.
+                        format(filename, e))
 
     def getCsvFilename(self, histReq):
         """
@@ -150,16 +127,6 @@ class HistRequester(TWSClient):
                 histReq.barSizeSetting.replace(' ', ''),
                 histReq.endDateTime.strftime('%Y%m%d'))
         return filename
-
-    def disconnect(self):
-        TWSClient.disconnect(self)
-        self.ready.clear()
-
-    @iswrapper
-    def nextValidId(self, reqId: int):
-        self._reqIdSeq = reqId
-        print('Connected to server version {}'.format(self.serverVersion_))
-        self.ready.set()
 
     @iswrapper
     def historicalData(self, reqId: int, date: str, open: float, high: float,

@@ -1,7 +1,8 @@
 from .contracts import *
-from .tws_async import *
-from .tws_async_qt import *
+from .twsclient import *
+from .twsclientqt import *
 from .histrequester import *
+from . import util
 
-__all__ = (contracts.__all__ + tws_async.__all__ + tws_async.__all__ +
-        histrequester.__all__)
+__all__ = (['util'] + contracts.__all__ + twsclient.__all__ +
+        twsclient.__all__ + histrequester.__all__)

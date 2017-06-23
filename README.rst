@@ -108,6 +108,16 @@ or just connect asynchonously (i.e. give asyncConnect=True to the connect call).
 Changelog
 =========
 
+Version 0.5.4
+-------------
+* connect() call of the clients will now by default block until client is ready to serve requests.
+* getReqId() method added to both clients.
+* dataHandlingPre() and dataHandlingPost() event hooks added to clients.
+* logging added.
+* util module aded.
+* file tws_async.py renamed to twsclient.py, tws_asyncqt.py to twsclientqt.py.
+ 
+
 Version 0.5.3
 -------------
 * Added optional ``asyncConnect`` argument to ``client.connect()`` method. The default is now to connect synchronously (block until connected).

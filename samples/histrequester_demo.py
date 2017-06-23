@@ -19,7 +19,7 @@ endDate = datetime.date.today()
 startDate = endDate - datetime.timedelta(days=7)
 
 histReqs = []
-for date in dateRange(startDate, endDate):
+for date in util.dateRange(startDate, endDate):
     histReqs += [HistRequest(stock, date) for stock in stocks]
     histReqs += [HistRequest(forex, date, whatToShow='MIDPOINT',
             durationStr='30 D', barSizeSetting='1 day') for forex in forexs]
@@ -28,7 +28,8 @@ timezone = datetime.timezone.utc
 # timezone = pytz.timezone('Europe/Amsterdam')
 # timezone = pytz.timezone('US/Eastern')
 
+util.logToConsole()
 tws = HistRequester()
-tws.connect('127.0.0.1', 7497, clientId=1)
+tws.connect('127.0.0.1', 7497, clientId=2)
 task = tws.download(histReqs, rootDir='data', timezone=timezone)
 tws.run(task)

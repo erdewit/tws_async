@@ -1,9 +1,12 @@
 import struct
 import asyncio
+import logging
 
 import ibapi
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper, iswrapper
+
+from . import util
 
 __all__ = ['TWSClient', 'TWSException', 'iswrapper']
 
@@ -17,11 +20,15 @@ class TWSClient(EWrapper, EClient):
     Modification of EClient that uses the event loop from asyncio.
     """
     def __init__(self):
+        self.readyEvent = asyncio.Event()
         EClient.__init__(self, wrapper=self)
+        self._logger = logging.getLogger(__class__.__name__)
 
     def reset(self):
         EClient.reset(self)
+        self.readyEvent.clear()
         self._data = b''
+        self._reqIdSeq = 0
 
     def run(self, coro=None):
         """
@@ -35,20 +42,42 @@ class TWSClient(EWrapper, EClient):
             loop.run_until_complete(coro)
 
     def connect(self, host, port, clientId, asyncConnect=False):
+        self._logger.info('Connecting to {}:{} with clientId {}...'.
+                format(host, port, clientId))
         self.host = host
         self.port = port
         self.clientId = clientId
         self.setConnState(EClient.CONNECTING)
         self.conn = TWSConnection(host, port)
         self.conn.connected = self._onSocketConnected
+        self.conn.connectionLost = self._onSocketConnectionLost
         self.conn.hasData = self._onSocketHasData
-        self.conn.connect(asyncConnect)
+        self.conn.connect()
+        if not asyncConnect:
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(self.readyEvent.wait())
+
+    def getReqId(self) -> int:
+        """
+        Get new request ID.
+        """
+        assert self._reqIdSeq
+        newId = self._reqIdSeq
+        self._reqIdSeq += 1
+        return newId
+
+    def dataHandlingPre(self):
+        pass
+
+    def dataHandlingPost(self):
+        pass
 
     def _prefix(self, msg):
         # prefix a message with its length
         return struct.pack('>I', len(msg)) + msg
 
     def _onSocketConnected(self):
+
         # start handshake
         msg = b'API\0'
         msg += self._prefix(b'v%d..%d' % (
@@ -57,7 +86,11 @@ class TWSClient(EWrapper, EClient):
         self.conn.sendMsg(msg)
         self.decoder = ibapi.decoder.Decoder(self.wrapper, None)
 
+    def _onSocketConnectionLost(self):
+        self._logger.error('Connection lost')
+
     def _onSocketHasData(self, data):
+        self.dataHandlingPre()
         self._data += data
 
         while True:
@@ -81,9 +114,20 @@ class TWSClient(EWrapper, EClient):
                 self.setConnState(EClient.CONNECTED)
                 self.startApi()
                 self.wrapper.connectAck()
+                self._logger.info('Logged on to server version {}'.
+                        format(self.serverVersion_))
             else:
+                # snoop for next valid id response,
+                # it signals readiness of the client
+                if fields[0] == b'9':
+                    _, _, validId = fields
+                    self._reqIdSeq = int(validId)
+                    self.readyEvent.set()
+
                 # decode and handle the message
                 self.decoder.interpret(fields)
+
+        self.dataHandlingPost()
 
 
 class TWSConnection:
@@ -98,21 +142,18 @@ class TWSConnection:
         # the following are callbacks for socket events
         self.hasData = None
         self.connected = None
+        self.connectionLost = None
 
     def _onConnectionCreated(self, future):
         _, self.socket = future.result()
         self.connected()
 
-    def connect(self, asyncConnect=False):
+    def connect(self):
         loop = asyncio.get_event_loop()
         coro = loop.create_connection(lambda: TWSSocket(self),
                 self.host, self.port)
         future = asyncio.ensure_future(coro)
-        if asyncConnect:
-            future.add_done_callback(self._onConnectionCreated)
-        else:
-            loop.run_until_complete(future)
-            self._onConnectionCreated(future)
+        future.add_done_callback(self._onConnectionCreated)
 
     def disconnect(self):
         self.socket.transport.close()
@@ -135,7 +176,7 @@ class TWSSocket(asyncio.Protocol):
         self.transport = transport
 
     def connection_lost(self, exc):
-        print('Connection lost')
+        self.twsConnection.connectionLost()
 
     def data_received(self, data):
         self.twsConnection.hasData(data)
@@ -150,17 +191,15 @@ class TWS_Test(TWSClient):
         TWSClient.__init__(self)
 
     @iswrapper
-    def nextValidId(self, reqId: int):
-        self.reqAccountUpdates(1, '')
-
-    @iswrapper
     def updateAccountValue(self, key: str, val: str, currency: str,
             accountName: str):
         print('Account update: {} = {} {}'.format(key, val, currency))
 
 
 if __name__ == '__main__':
+    util.logToConsole()
     tws = TWS_Test()
     tws.connect(host='127.0.0.1', port=7497, clientId=1)
+    tws.reqAccountUpdates(1, '')
     tws.run()
 

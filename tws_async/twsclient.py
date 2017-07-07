@@ -52,10 +52,11 @@ class TWSClient(EWrapper, EClient):
         self.conn.connected = self._onSocketConnected
         self.conn.connectionLost = self._onSocketConnectionLost
         self.conn.hasData = self._onSocketHasData
-        self.conn.connect()
+        connect_future = self.conn.connect()
         if not asyncConnect:
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.readyEvent.wait())
+            loop.run_until_complete(asyncio.gather(connect_future,
+                                                   self.readyEvent.wait()))
 
     def getReqId(self) -> int:
         """
@@ -148,12 +149,13 @@ class TWSConnection:
         _, self.socket = future.result()
         self.connected()
 
-    def connect(self):
+    def connect(self) -> asyncio.Future:
         loop = asyncio.get_event_loop()
         coro = loop.create_connection(lambda: TWSSocket(self),
                 self.host, self.port)
         future = asyncio.ensure_future(coro)
         future.add_done_callback(self._onConnectionCreated)
+        return future
 
     def disconnect(self):
         self.socket.transport.close()

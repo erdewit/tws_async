@@ -1,3 +1,14 @@
+Notice
+======
+
+This project has evolved into `IB-insync <https://github.com/erdewit/ib_insync>`_
+and all development is happening there now.
+
+To port code:
+
+* ``TWSClient`` has moved to ``ib_insync.client.Client`` (with much improvements);
+* ``TWSClientQt``: The new ``Client`` can be used with PyQt and quamash.
+
 Introduction
 ============
 

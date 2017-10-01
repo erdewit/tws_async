@@ -105,8 +105,6 @@ One thing that does not work in the combination of quamash and Jupyter is the
         qApp = qt.QApplication.instance()
         while not future.done():
             qApp.processEvents(qt.QEventLoop.WaitForMoreEvents)
-            if future.done():
-                break
         return future.result()
     
     quamash.QEventLoop.run_until_complete = run_until_complete

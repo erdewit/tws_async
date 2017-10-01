@@ -91,8 +91,7 @@ the top of the notebook:
 .. code:: python
 
     %gui qt5
-    import asyncio
-    import quamash
+    import asyncio, quamash
     loop = quamash.QEventLoop()
     asyncio.set_event_loop(loop)
 
@@ -104,10 +103,10 @@ One thing that does not work in the combination of quamash and Jupyter is the
     def run_until_complete(self, future):
         future = asyncio.ensure_future(future)
         qApp = qt.QApplication.instance()
-        while(not future.done()):
-            qApp.processEvents()
-            qt.QThread.usleep(1000)
-        qApp.processEvents()
+        while not future.done():
+            qApp.processEvents(qt.QEventLoop.WaitForMoreEvents)
+            if future.done():
+                break
         return future.result()
     
     quamash.QEventLoop.run_until_complete = run_until_complete

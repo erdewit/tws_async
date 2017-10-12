@@ -56,7 +56,7 @@ class TWSClient(EWrapper, EClient):
         if not asyncConnect:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(asyncio.gather(connect_future,
-                                                   self.readyEvent.wait()))
+                    self.readyEvent.wait()))
 
     def getReqId(self) -> int:
         """

@@ -10,10 +10,9 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-
 setup(
     name='tws_async',
-    version='0.5.5',
+    version='0.5.6',
     description=('Use the Interactive Brokers API (IBAPI) asynchonously'
             'with asyncio or PyQt5'),
     long_description=long_description,

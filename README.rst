@@ -116,6 +116,11 @@ or just connect asynchonously (i.e. give asyncConnect=True to the connect call).
 Changelog
 =========
 
+Version 0.5.6
+-------------
+
+* HistRequester updated to version 9.73.04 of the API
+
 Version 0.5.5
 -------------
 * small simplifications

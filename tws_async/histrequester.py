@@ -6,6 +6,7 @@ import csv
 
 import ibapi
 from .twsclient import TWSClient, iswrapper, TWSException
+from ibapi.wrapper import BarData
 
 UTC = datetime.timezone.utc
 
@@ -17,11 +18,12 @@ class HistRequest:
     Historical request.
     """
     def __init__(self, contract, endDateTime=None, durationStr='1 D',
-            barSizeSetting='1 min', whatToShow='TRADES', useRTH=False):
+            barSizeSetting='1 min', keepUpToDate = False, whatToShow='TRADES', useRTH=False):
         self.contract = contract
         self.endDateTime = endDateTime
         self.durationStr = durationStr
         self.barSizeSetting = barSizeSetting
+        self.keepUptoDate = keepUpToDate
         self.whatToShow = whatToShow
         self.useRTH = useRTH
         self.formatDate = 1 if barSizeSetting \
@@ -56,7 +58,7 @@ class HistRequester(TWSClient):
             end = req.endDateTime.strftime('%Y%m%d 23:59:59')
         self.reqHistoricalData(reqId, req.contract, end,
                 req.durationStr, req.barSizeSetting, req.whatToShow,
-                req.useRTH, formatDate=req.formatDate,
+                req.useRTH, formatDate=req.formatDate, keepUpToDate = req.keepUptoDate,
                 chartOptions=req.chartOptions)
         self._histReqs[reqId] = req
         fut = asyncio.Future()
@@ -129,20 +131,21 @@ class HistRequester(TWSClient):
         return filename
 
     @iswrapper
-    def historicalData(self, reqId: int, date: str, open: float, high: float,
-            low: float, close: float, volume: int, barCount: int,
-            WAP: float, hasGaps: int):
+    def historicalData(self, reqId: int, bar: BarData):
+    # def historicalData(self, reqId: int, date: str, open: float, high: float,
+    #         low: float, close: float, volume: int, barCount: int,
+    #         WAP: float, hasGaps: int):
         histReq = self._histReqs[reqId]
         if histReq.formatDate == 1:
             # YYYYmmdd
-            y = int(date[0:4])
-            m = int(date[4:6])
-            d = int(date[6:8])
+            y = int(bar.date[0:4])
+            m = int(bar.date[4:6])
+            d = int(bar.date[6:8])
             dt = datetime.date(y, m, d)
         else:
-            dt = datetime.datetime.utcfromtimestamp(int(date))
-        histReq.data.append([dt, open, high, low, close,
-                volume if volume > 0 else 0])
+            dt = datetime.datetime.utcfromtimestamp(int(bar.date))
+        histReq.data.append([dt, bar.open, bar.high, bar.low, bar.close,
+                             bar.volume if bar.volume > 0 else 0])
 
     @iswrapper
     def historicalDataEnd(self, reqId: int, start: str, end: str):

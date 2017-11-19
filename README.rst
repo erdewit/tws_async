@@ -116,6 +116,11 @@ or just connect asynchonously (i.e. give asyncConnect=True to the connect call).
 Changelog
 =========
 
+Version 0.5.7
+-------------
+
+* HistRequester fix for endDateTime formatting
+
 Version 0.5.6
 -------------
 

@@ -17,8 +17,9 @@ class HistRequest:
     """
     Historical request.
     """
+
     def __init__(self, contract, endDateTime=None, durationStr='1 D',
-            barSizeSetting='1 min', keepUpToDate = False, whatToShow='TRADES', useRTH=False):
+            barSizeSetting='1 min', keepUpToDate=False, whatToShow='TRADES', useRTH=False):
         self.contract = contract
         self.endDateTime = endDateTime
         self.durationStr = durationStr
@@ -36,6 +37,7 @@ class HistRequester(TWSClient):
     """
     Download historical data and save to CSV files.
     """
+
     def __init__(self):
         TWSClient.__init__(self)
         self._reqIdSeq = 0
@@ -53,12 +55,12 @@ class HistRequester(TWSClient):
         if not req.endDateTime:
             end = ''
         elif isinstance(req.endDateTime, datetime.datetime):
-            end = req.endDateTime.strftime('%Y%m%d %H:%M:%S'),
+            end = req.endDateTime.strftime('%Y%m%d %H:%M:%S')
         else:
             end = req.endDateTime.strftime('%Y%m%d 23:59:59')
         self.reqHistoricalData(reqId, req.contract, end,
                 req.durationStr, req.barSizeSetting, req.whatToShow,
-                req.useRTH, formatDate=req.formatDate, keepUpToDate = req.keepUptoDate,
+                req.useRTH, formatDate=req.formatDate, keepUpToDate=req.keepUptoDate,
                 chartOptions=req.chartOptions)
         self._histReqs[reqId] = req
         fut = asyncio.Future()
